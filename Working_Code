@@ -1,0 +1,1077 @@
+import time
+import sys
+from random import *
+from time import sleep
+from operator import itemgetter
+from IPython.display import clear_output
+
+
+def blackjack():
+    #Function to reset the game
+    def reset():
+        global deck, player, dealer
+        
+        deck = [2, 3, 4, 5, 6, 7, 8, 9, 10, 'J', 'Q', 'K', 'A',
+                2, 3, 4, 5, 6, 7, 8, 9, 10, 'J', 'Q', 'K', 'A',
+                2, 3, 4, 5, 6, 7, 8, 9, 10, 'J', 'Q', 'K', 'A',
+                2, 3, 4, 5, 6, 7, 8, 9, 10, 'J', 'Q', 'K', 'A']
+        
+        player = []
+        dealer = []
+        
+        #Function to deal cards to each player
+    def deal():
+        for i in range(0,2):
+            card = randint(0, len(deck)-1)
+            player.append(deck[card])
+            deck.remove(deck[card])
+            
+            card = randint(0, len(deck))
+            dealer.append(deck[card])
+            deck.remove(deck[card])
+
+    #Function to calculate the value of each hand
+    def value(hand):
+        value = 0
+        faces = ['J', 'Q', 'K']
+        for card in hand:
+            if card in range(2, 11):
+                value += card
+            elif card in faces:
+                value += 10
+            elif (card == 'A'):
+                if value > 10:
+                    value += 1
+                else:
+                    value += 11
+    
+        return value
+
+    #Function to hit for more cards
+    def hit(hand):
+        card = randint(0, len(deck)-1)
+        hand.append(deck[card])
+        deck.remove(deck[card])
+
+    #Function that prints repeated things
+    def prnt(num):
+        if num == 1:
+            print('\n'*100)
+            print('-'*30)
+            print(f'Balance: ${balance}')
+            print(f'Bet: {bet}')
+            
+            print('-'*30)
+            print(f'Dealer hand: {dealer[0]}, ?')
+            print(f'\nPlayer hand: {", ".join([str(x) for x in player])}')
+            print('-'*30)
+        else:
+            print('\n'*100)
+            print('-'*30)
+            print(f'Balance: ${balance}')
+            print(f'Bet: {bet}')
+            
+            print('-'*30)
+            print(f'Dealer hand: {", ".join([str(x) for x in dealer])}')
+            print(f'\nPlayer hand: {", ".join([str(x) for x in player])}')
+            print('-'*30)
+
+
+    print("Instructions:\n\nIn Blackjack, you start off with two cards, and so does the dealer. The objective is to get to 21 points without going over. Face-cards are 10 points each, and aces are one if you are above ten points and eleven points if you are below ten points. Folding means you give up and hitting means you want another card. You can also enter 'exit' to return to the main menu at any time.")
+    print()
+    ready = input('Do you understand? Enter yes or no: ')
+    while ready != 'yes' and ready != 'no' and ready != 'exit':
+        ready = input("Enter 'yes' or 'no', or you can enter 'exit' to go to the main menu: ")
+    if ready == 'exit':
+        print('\n\n\n\n')
+        main_screen()
+    elif ready == 'no':
+        print('You will learn as you go.')
+
+
+
+
+
+
+    #Loop that runs everything
+    balance = 1000
+    print('-'*30)
+    user_input = 'y'
+    while user_input == 'y':
+        reset()
+        deal()
+        
+        #Getting bet from player
+        print('\n'*100)
+        print('-'*30)
+        print(f'Balance: ${balance}')
+        bet_str = (input('Enter Bet: '))
+        if bet_str == 'exit':
+            print('\n\n\n\n')
+            main_screen()
+        checking = True
+        while checking == True:
+            try:
+                bet = int(bet_str)
+                checking = False
+            except ValueError:
+                    bet_str = (input("You must enter a number: "))
+        #Checking if bet is legal
+        while bet > balance:
+            bet_str = (input('Invalid bet. Try again: '))
+            if bet_str == 'exit':
+                print('\n\n\n\n')
+                main_screen()
+            bet = int(bet_str)
+        
+        #Getting user hits   
+        if value(player) < 21:
+            print('-'*30)
+            sleep(1)
+            prnt(1)
+            user_input = input('Hit?(Y/N): ')
+            while user_input != 'y' and user_input != 'Y' and user_input != 'n' and user_input != 'N' and user_input != 'exit':
+                user_input = input("To hit, enter either 'y' or 'n': ")
+            if user_input == 'exit':
+                print('\n\n\n\n')
+                main_screen()
+            while user_input == 'y':
+                hit(player)
+                sleep(1)
+                prnt(1)
+                if value(player) >= 21:
+                    break
+                user_input = input('Hit?(Y/N): ')
+                while user_input != 'y' and user_input != 'Y' and user_input != 'n' and user_input != 'N' and user_input != 'exit':
+                    user_input = input("To hit, enter either 'y' or 'n': ")
+            if user_input == 'exit':
+                print('\n\n\n\n')
+                main_screen()
+            #Checking user values againt dealer values
+            value1 = value(player)
+            value2 = value(dealer)
+            if value1 > 21:
+                balance -= bet
+                sleep(1)
+                prnt(2)
+                print('Player loses!')
+                print('-'*30)
+            elif value2 == value1:
+                sleep(1)
+                prnt(2)
+                print('Tie!')
+                print('-'*30)
+            elif (value2 == 21) and ((value1 > 21) or (value1 < 21)):
+                balance -= bet
+                sleep(1)
+                prnt(2)
+                print('Player loses!')
+                print('-'*30)
+            elif (value2 < 21) and (value2 > value1):
+                balance -= bet
+                sleep(1)
+                prnt(2)
+                print('Player loses!')
+                print('-'*30)
+            elif value2 < value1:
+                while True:
+                    hit(dealer)
+                    value2 = value(dealer)
+                    sleep(1)
+                    prnt(2)
+                
+                    if (value2 > value1) and (value2 <= 21):
+                        balance -= bet
+                        sleep(1)
+                        prnt(2)
+                        print('Player loses!')
+                        print('-'*30)
+                        break
+                    elif value2 == value1:
+                        sleep(1)
+                        prnt(2)
+                        print('Tie!')
+                        print('-'*30)
+                        break
+                    elif value2 > 21:
+                        balance += bet
+                        sleep(1)
+                        prnt(2)
+                        print('Player Wins!')
+                        print('-'*30)
+                        break
+        
+       
+        #Checking if user wants to play again
+        user_input = input('Play Again?(Y/N): ').lower()
+        while user_input != 'y'  and user_input != 'Y' and user_input != 'n' and user_input != 'N' and user_input != 'exit':
+            user_input = input("Enter 'y' if you want to play again or 'n' to be brought back to the main menu: ")
+        if user_input == 'n':
+            print('\n\n\n\n')
+            main_screen()
+        elif user_input == 'exit':
+            print('\n\n\n\n')
+            main_screen()
+    
+    
+def poker():
+    ## Final Game: Texas Snake-em'
+
+    #Libraries
+    from IPython.display import clear_output #adds the ability to clear cell output. (clear_output())
+    from random import randint #have to be able to generate cards psuedo-randomly
+    from operator import itemgetter #makes list comprehension less of a headache
+    from time import sleep #need to wait to make the game feel more gamey
+
+    #Custom Exceptions
+    class ExitCondition(Exception):
+        pass
+
+    #Constants
+    suitdict = {
+        1: 'Clubs',
+        2: 'Diamonds',
+        3: 'Hearts',
+        4: 'Spades'
+    }
+    facedict = {
+        14: 'Ace',
+        11: 'Jack',
+        12: 'Queen',
+        13: 'King'
+    }
+    windict = {
+        0: 'High Card',
+        1: 'One Pair',
+        2: 'Two Pair',
+        3: 'Three of a kind',
+        4: 'Straight',
+        5: 'Flush',
+        6: 'Full House',
+        7: 'Four of a kind',
+        8: 'Straight Flush',
+        9: 'Royal Flush',
+    }
+
+    #Functions (non-win-condition)
+    def drawcard(cardsinplayL): #generates a card that is not in play (likely cause of breaks - notice that the ace is 14 now.)
+        while True:
+            suit = randint(1, 4)
+            number = randint(2, 14)
+            card = [number, suit]
+            if card not in cardsinplayL:
+                cardsinplayL.append(card)
+                break
+        return(card, cardsinplayL)
+
+    def cardname(inputlist): #putting a name to a face
+        if inputlist[0] not in facedict:
+            number = inputlist[0]
+        else:
+            number = facedict[inputlist[0]]
+        suit = suitdict[inputlist[1]]
+        return(f'{number} of {suit}')
+
+    def nexthandtier(prevhandvals, newhandvals): #allows us to see if the next tier of hand has been reached
+        for i in range(len(newhandvals)):
+            if newhandvals[i] != []:
+                prevhandvals[i] = newhandvals[i]
+        return(prevhandvals)
+
+    def choosewinner(finalhandvals, folded): #takes the final hand values and delivers a winner.
+        pos, currentwinner = 0, [0, [0, [0, 0]]]
+
+        #if you fold, you can't win.
+        for player in range(len(finalhandvals)):
+            if folded[player]:
+                finalhandvals[player] = [[0, [0, 0]]]
+
+        #iterate through the hands and decide who won
+        #hand format: [handvalue(larger is better), [combination they won with]]
+        for hand in finalhandvals:
+            if hand[0] > currentwinner[1][1]:
+                currentwinner = [pos, hand[:]]
+            elif hand[0] == currentwinner[0][1][0]:
+                if hand[1] == current:
+                    currentwinner.append([pos, hand[:]])
+                elif hand[1] > currentwinner[0][1][1]:
+                    currentwinner = [pos, hand[:]]       
+            pos += 1
+
+        #return in format [winnerposition
+        return(currentwinner)
+            
+    def isroundover(folded, currentbet, playercounter, playercount, allin):
+        readytoend, betante = [], max(currentbet)
+        for p in range(playercount):
+            readytoend.append(False)
+
+        if playercounter >= playercount:
+            for player in range(playercount):
+                readytoend[player] = (folded[player] or allin[player] != -1) or (currentbet[player] == betante)
+
+        if folded.count(False) == 1:
+            return(True)
+        
+        return(not(False in readytoend))
+
+    def keepscreenclear(playerno):
+        clear_output()
+        if folded[playerno] or allin[playerno] != -1:
+            return(False)
+        else:    
+            print(f'Pass the screen to player number {playerno + 1}.\n\n\n')
+            if input('Press enter to continue to the turn, or type exit to exit the game: ').lower() == 'exit':
+                raise ExitCondition
+            return(True)
+
+    def choosewinner(finalhandvals, folded): #takes the final hand values and delivers a winner.
+        pos, currentwinner = 0, [[0, [0, [0, 0]]]]
+
+        #if you fold, you can't win.
+        for player in range(len(finalhandvals)):
+            if folded[player]:
+                finalhandvals[player] = [0, [0, 0]]
+
+        #iterate through the hands and decide who won
+        #hand format: [handvalue(larger is better), [combination they won with]]
+        for hand in finalhandvals:
+            if hand[0] > currentwinner[0][1][0]:
+                currentwinner = [[pos, hand[:]]]
+            elif hand[0] == currentwinner[0][1][0]:
+                if hand[1][0] == currentwinner[0][1][1][0]:
+                    currentwinner.append([pos, hand[:]])
+                elif hand[1][0] > currentwinner[0][1][1][0]:
+                    currentwinner = [[pos, hand[:]]]       
+            pos += 1
+        return(currentwinner)
+
+    def printwinner(winnerlist, pot, chips, allin):
+        #clear_output()
+        if len(winnerlist) == 1:
+            winner = winnerlist[0][0]
+            print(f'Player {winner + 1} has won the pot of ${pot:.2f} with a {windict[winnerlist[0][1][0]]}, and now has ${(chips[winner] + pot):.2f} in chips.')
+            chips[winner] += pot
+        else:
+            printstr = 'Players '
+            for entry in winnerlist:
+                chips[entry[0]] += pot / len(winnerlist)
+                printstr += str(entry[0] + 1)
+                if entry != winnerlist[-1]:
+                    printstr += ' and '
+            printstr += f' have won the pot of ${pot:.2f} with a {windict[winnerlist[0][1][0]]}, and split the pot evenly.'
+            print(printstr)
+        return(chips)
+
+    def restart(chips):
+        counter = 0
+        for playerno in range(len(chips)):
+            if chips[playerno] == 0:
+                counter += 1
+        user_inp = input(f'Go for another round with the same chips? {counter} players have run out of chips and will not be able to play. (Y/N):')
+        if user_inp.lower() == 'y':
+            return(True)
+        else:
+            return(False)
+
+
+    #Functions (win condition)
+    def nexthandtier(prevhandvals, newhandvals): #Used to update hand values
+        for i in range(len(newhandvals)):
+            if newhandvals[i] != []:
+                prevhandvals[i] = newhandvals[i]
+        return(prevhandvals)
+
+    def twoofakind(handsL, tableL): #FIXME: pretty sure ace is actually on top
+        output = []
+        for hand in handsL:
+            scorecard, matchmet = hand + table, []
+            scorecard = sorted(scorecard, key=itemgetter(0))
+            for cardpos1 in range(len(scorecard)):
+                for cardpos2 in range(len(scorecard)):
+                    if (scorecard[cardpos1][0] == scorecard[cardpos2][0]) and cardpos1 != cardpos2:
+                        matchmet = [1, scorecard[cardpos1]]
+            output.append(matchmet)
+        return(output)
+
+    def highcard(handsL, unused):
+        output = []
+        for hand in handsL:
+            matchmet = []
+            hand = sorted(hand, key=itemgetter(0))
+            matchmet = hand[-1]
+            output.append([0, matchmet])
+        return output
+        
+    def twopair(handsL, tableL):
+        output = []
+        for hand in handsL:
+            scorecard, matchmet = hand + table, [] 
+            found1, found2 = False, False
+            scorecard = sorted(scorecard, key=itemgetter(0))
+            scorecard.reverse()
+            for cardpos1 in range(len(scorecard)):
+                for cardpos2 in range(len(scorecard)):
+                    if (scorecard[cardpos1][0] == scorecard[cardpos2][0]) and cardpos1 != cardpos2:
+                        first_card, first_card2 = scorecard[cardpos1], scorecard[cardpos2]
+                        scorecard.remove(first_card)
+                        scorecard.remove(first_card2)
+                        found1 = True
+                        break
+                if found1:
+                    break
+            for cardpos1 in range(len(scorecard)):
+                for cardpos2 in range(len(scorecard)):
+                    if (scorecard[cardpos1][0] == scorecard[cardpos2][0]) and cardpos1 != cardpos2:
+                        second_card = scorecard[cardpos1]
+                        found2 = True
+                if found2:
+                    break
+            if found1 and found2:
+                if second_card[0] > first_card[0]:
+                    matchmet = [2,second_card]
+                else:
+                    matchmet = [2,first_card]
+            output.append(matchmet)
+        return(output)
+
+
+    def threeofakind(handsL, tableL):
+        output = []
+        for hand in handsL:
+            scorecard, matchmet, breakl = hand + table, [], True
+            scorecard = sorted(scorecard, key=itemgetter(0))
+            scorecard.reverse()
+            for cardpos1 in range(len(scorecard)):
+                for cardpos2 in range(len(scorecard)):
+                    for cardpos3 in range(len(scorecard)):
+                        if (scorecard[cardpos1][0] == scorecard[cardpos2][0] == scorecard[cardpos3][0]) and (cardpos1 != cardpos2 != cardpos3 and cardpos1 != cardpos3):
+                            matchmet = [3, scorecard[cardpos1]]
+                            breakl = True
+                if breakl:
+                    break
+            output.append(matchmet)
+        return(output)
+        
+    def straight(handsL, tableL):
+        output = []
+        hand_nums = []
+        validator = 0
+        for hand in handsL:
+            scorecard, matchmet, pattern = hand + tableL, [], -1
+            scorecard = sorted(scorecard, key=itemgetter(0))
+            for card in scorecard:
+                if card[0] not in hand_nums:
+                    hand_nums.append(card[0])
+            for number in hand_nums:
+                startno, validlist = number, []
+                for cardno in range(hand_nums.index(number), hand_nums.index(number) + 5):
+                    if hand_nums[cardno % len(hand_nums)] % len(hand_nums) == (number + len(validlist)) % len(hand_nums):
+                        validlist.append(hand_nums[cardno % len(hand_nums)])
+                    if len(validlist) == 5:
+                        highest_card = max(validlist)
+                        for entry in scorecard:
+                            if entry[0] == highest_card:
+                                matchmet = [4, entry]
+                                break
+            output.append(matchmet)
+        return(output)
+        
+    def flush(handsL, tableL):
+        output = []
+        for hand in handsL:
+            suits, matchmet, scorecard = [], [], hand + tableL
+            scorecard = sorted(scorecard, key=itemgetter(0))
+            scorecard.reverse()
+            for card in scorecard:
+                suits.append(card[1])
+            for suitv in range(1, 5):
+                fcount = suits.count(suitv)
+                if fcount >= 5:
+                    suit = suitv
+                    for card in scorecard:
+                        if card[1] == suit:
+                            matchmet = [5, card]
+                            break
+            output.append(matchmet)
+        return(output)
+        
+    def fullhouse(handsL, tableL):
+        output = []
+        for hand in handsL:
+            firstcon = False
+            scorecard, matchmet, breakl, goodcards = hand + tableL, [], True, []
+            scorecard = sorted(scorecard, key=itemgetter(0))
+            scorecard.reverse()
+            for cardpos1 in range(len(scorecard)):
+                for cardpos2 in range(len(scorecard)):
+                    for cardpos3 in range(len(scorecard)):
+                        if (scorecard[cardpos1][0] == scorecard[cardpos2][0] == scorecard[cardpos3][0]) and (cardpos1 != cardpos2 != cardpos3 and cardpos1 != cardpos3):
+                            card1 = scorecard[cardpos1]
+                            card2 = scorecard[cardpos2]
+                            card3 = scorecard[cardpos3]
+                            for card in [card1, card2, card3]:
+                                goodcards.append(card)
+                            firstcon = True
+                            break
+                    if firstcon:
+                        break
+                if firstcon:
+                    break
+                
+            if firstcon:
+                scorecard.remove(card1)
+                scorecard.remove(card2)
+                scorecard.remove(card3)
+                for cardpos1 in range(len(scorecard)):
+                    for cardpos2 in range(len(scorecard)):
+                        if scorecard[cardpos1][0] == scorecard[cardpos2][0] and (cardpos1 != cardpos2):
+                            goodcards.append(scorecard[cardpos1])
+                            goodcards.append(scorecard[cardpos2])
+                            goodcards = sorted(goodcards, key=itemgetter(0))
+                            matchmet = [6, goodcards[-1]]
+            output.append(matchmet)
+        return(output)
+        
+    def fourofakind(handsL, tableL):
+        output = []
+        for hand in handsL:
+            scorecard, matchmet = hand + table, []
+            scorecard = sorted(scorecard, key=itemgetter(0))
+            for cardpos1 in range(len(scorecard)):
+                for cardpos2 in range(len(scorecard)):
+                    for cardpos3 in range(len(scorecard)):
+                        for cardpos4 in range(len(scorecard)):
+                            if (scorecard[cardpos1][0] == scorecard[cardpos2][0] and scorecard[cardpos2][0] == scorecard[cardpos3][0] and scorecard[cardpos3] == scorecard[cardpos4]) and (cardpos1 != cardpos2 and cardpos1 != cardpos3 and cardpos1 != cardpos4 and cardpos2 != cardpos3 and cardpos2 != cardpos4 and cardpos3 != cardpos4):
+                                matchmet = [7, scorecard[cardpos1]]
+            output.append(matchmet)
+        return(output)
+        
+        
+    def straightflush(handsL, tableL):
+        output = []
+        hand_nums = []
+        validator = 0
+        for hand in handsL:
+            scorecard, matchmet, pattern, breakl = hand + tableL, [], -1, False
+            scorecard = sorted(scorecard, key=itemgetter(0))
+            for card in scorecard:
+                if card[0] not in hand_nums:
+                    hand_nums.append(card[0])
+            for number in hand_nums:
+                startno, validlist = number, []
+                for cardno in range(hand_nums.index(number), hand_nums.index(number) + 5):
+                    if hand_nums[cardno % len(hand_nums)] % len(hand_nums) == ((number + len(validlist)) % len(hand_nums)):
+                        validlist.append(hand_nums[cardno % len(hand_nums)])
+
+                    wedone = False
+                    for val1pos in range(len(validlist)):
+                        for val2pos in range(len(validlist)):
+                            if validlist[val1pos] == validlist[val2pos] and val1pos != val2pos:
+                                validlist.pop(val1pos)
+                                wedone = True
+                                break
+
+                        if wedone:
+                            break
+                    
+                    if len(validlist) == 5:
+                        highest_card = max(validlist)
+                        for wewantsuit in range(1, 5):
+                            yaycount = 0
+                            for number in validlist:
+                                for entry in scorecard:
+                                    if entry[0] == number:
+                                        if entry[1] == wewantsuit:
+                                            yaycount += 1
+                                            break
+                                        
+                                if yaycount == 5:
+                                    matchmet = [8, [highest_card, wewantsuit]]
+            output.append(matchmet)
+        return(output)
+        
+    def royalflush(handsL, tableL):
+        output = []
+        for hand in handsL:
+            scorecard = hand + tableL
+            matchmet = []
+            for suit in range(1, 5):
+                valid = True
+                for cardneeded in range(10, 15):
+                    if [cardneeded, suit] not in scorecard:
+                        valid = False
+                if valid:
+                    matchmet = [9, [14, suit]]
+            output.append(matchmet)
+        return(output)
+
+    def tallyup(hands, table):
+        finalhandvals = highcard(hands, table)
+        finalhandvals = nexthandtier(finalhandvals, twoofakind(hands, table))
+        finalhandvals = nexthandtier(finalhandvals, twopair(hands, table))
+        finalhandvals = nexthandtier(finalhandvals, threeofakind(hands, table))
+        finalhandvals = nexthandtier(finalhandvals, straight(hands, table))
+        finalhandvals = nexthandtier(finalhandvals, flush(hands, table))
+        finalhandvals = nexthandtier(finalhandvals, fullhouse(hands, table))
+        finalhandvals = nexthandtier(finalhandvals, fourofakind(hands, table))
+        finalhandvals = nexthandtier(finalhandvals, straightflush(hands, table))
+        finalhandvals = nexthandtier(finalhandvals, royalflush(hands, table))
+        return(finalhandvals)
+
+    #Menu Function
+    def playermenu(handsL, namedtableL, roundL, potL, prpotsL, chipsL, playernoL, currentbetL, foldedL, allinL):
+        namedtablestring = '' #The things we do for nice strings
+        for namedcard in namedtableL[:(1 + roundL)]:
+            namedtablestring += namedcard + ', '
+        namedtablestring += namedtableL[(1 + roundL)]
+        namedplayerhandstring = f'{cardname(handsL[playernoL][0])} and {cardname(handsL[playernoL][1])}'
+
+        finished = False
+        while not(finished):
+            clear_output()
+            print(f'Round: {roundL + 1}\nPlayer: {playernoL + 1}\nPot has ${potL:.2f} in chips.\nYou have ${chipsL[playernoL]:.2f} in chips.\nThe current bet is ${max(currentbetL):.2f}\n')
+            print(f'  Table has {namedtablestring}\n  You have {namedplayerhandstring}')
+            print('\n\nChoose an option to proceed')
+            print('-Raise-\n-Match-\n-All-in-\n-Check-\n-Fold-\n-Exit Game-\n')
+
+            sendtoallin = False
+            user_inp = input().lower()
+
+             #Raise functionality 
+            if user_inp == 'raise':
+                clear_output()
+                print(f'Raising the bet on the current round.\nYou have ${chipsL[playernoL]:.2f} to bet with.')
+                try:
+                    user_inp2 = float(input('Enter a new numeric bet to continue, or a letter to quit back to the menu: '))
+                    validbet = max(currentbetL) < user_inp2 < chipsL[playernoL]
+                except:
+                    user_inp2 = 'n'
+                    validbet = False
+                if validbet:
+                    chipsL[playernoL] -= user_inp2 - currentbetL[playernoL]
+                    currentbetL[playernoL] = user_inp2
+                    potL += currentbetL[playernoL]
+                    print(f'Successfully raised, new bet: ${max(currentbetL):.2f}, new balance: ${chipsL[playernoL]}')
+                    finished = True
+                elif user_inp2 == chipsL[playernoL]:
+                    sendtoallin = True
+                else:
+                    print('Invalid bet, or letter entered. Going back to menu.')
+                    sleep(3)
+                    clear_output()
+
+            #Matching
+            elif user_inp == 'match':
+                clear_output()
+                if chipsL[playernoL] < max(currentbetL):
+                    print(f'Not enough chips to match (Difference: {chipsL[playernoL] - max(currentbetL)})')
+                    sleep(3)
+                    clear_output()
+                else:
+                    chips[playernoL] -= max(currentbetL) - currentbet[playernoL]
+                    currentbetL[playernoL] = max(currentbet)
+                    potL += max(currentbetL) - currentbet[playernoL]
+                    print(f'Successfully matched, new balance: ${chipsL[playernoL]:.2f}')
+                    finished = True
+
+
+            #All-in (FIXME to new system of just putting the position of the pot they went all-in on)
+            elif user_inp in ['all-in', 'allin', 'all in'] or sendtoallin:
+                clear_output()
+                print("You're all in. You cannot make further bets, but you can win the pot up to the end of this round.")
+                potL += chips[playernoL]
+                currentbetL[playernoL] = chips[playernoL]
+                allin[playernoL], chips[playernoL] = roundL, 0
+                finished = True
+                    
+            #Checking
+            elif user_inp == 'check':
+                clear_output()
+                if max(currentbetL) == 0:
+                    print('Successfully checked, current bet is still 0.')
+                    finished = True
+                else:
+                    print(f'Checking not allowed, current bet is not $0 (${max(currentbetL):.2f}). Going back to menu.')
+                    sleep(3)
+                    clear_output()
+
+            #Folding
+            elif user_inp == 'fold':
+                clear_output()
+                if input('Are you sure? (Y/N): ').lower() == 'y':
+                    foldedL[playernoL] = True
+                    print('Successfully folded.')
+                    finished = True
+                else:
+                    print('Going back to menu.')
+                    sleep(3)
+                    clear_output()
+
+            #Exiting
+            elif user_inp in ['exit game', 'exit']: 
+                clear_output()
+                raise ExitCondition
+        sleep(3)
+        clear_output()
+        return(potL, currentbetL, chipsL, foldedL, allinL)
+        
+    #Game Variables
+    chips = []
+    hands, handvalues, cardsinplay, table, namedtable, folded, allin, prpots, currentbet = [], [], [], [], [], [], [], [], []
+    pot = 0
+    #Game Settings
+    sleep(1)
+    clear_output()
+    while True:
+        playercount = int(input('How many people are playing?: '))
+        if playercount < 2:
+            print("You can't play by yourself! Grab some friends!")
+        else:
+            break
+    sleep(0.5)
+    clear_output()
+
+    askstr = 'How much money should everyone start with?'
+    while True:
+        try: 
+            startbet = float(input(f'{askstr}: '))
+            if startbet <= 20:
+                askstr = "This isn't real money, don't be stingy!"
+            else:
+                for i in range(playercount):
+                    chips.append(startbet)
+                break
+        except:
+            askstr = 'Please enter a number with no added characters.'
+            continue
+
+    #Setting ability to exit function:
+    gamego = True
+    try:
+        while gamego:
+            #Starting round
+
+            #Reset Vars
+            hands, handvalues, cardsinplay, table, namedtable, folded, allin, prpots, currentbet = [], [], [], [], [], [], [], [], []
+
+            for player in range(playercount): #Assigning hands
+                handtemp = []
+                for n in range(2):
+                    cardtemp, cardsinplay = drawcard(cardsinplay)
+                    handtemp.append(cardtemp)
+                hands.append(handtemp)
+                folded.append(False)
+                allin.append(-1)
+                currentbet.append(0)
+                if chips[player] == 0:
+                    folded[playerno] = True
+
+            for i in range(5): #Dealing cards onto the table
+                cardtemp, cardsinplay = drawcard(cardsinplay)
+                table.append(cardtemp)
+
+            for card in table: #Table cards are static during the round, so we can name them now
+                namedtable.append(cardname(card))
+        
+                #FIXME - Big/Small blind assignment
+            #Iterate through rounds
+            for round in range(0, 3):
+                #every round starts with zero bet
+                playercounter, roundover = 0, False
+                for player in range(len(currentbet)):
+                    currentbet[player] = 0
+                if folded.count(False) == 1:
+                    break
+                
+                while not(roundover):
+                    #Need to derive a player number from the counter
+                    playerno = playercounter % playercount
+
+                    inplay = keepscreenclear(playerno)
+                    if inplay:
+                        clear_output()
+                        pot, sbet, chips, folded, allin = playermenu(hands, namedtable, round, pot, prpots, chips, playerno, currentbet, folded, allin)
+                    else:
+                        clear_output()
+                        print(f'Player {playerno + 1} has folded or is all-in. Skipping turn.')
+
+                    #Need to increment player counter
+                    playercounter += 1
+                
+                    #Function call to check if we need to continue round
+                    roundover = isroundover(folded, currentbet, playercounter, playercount, allin)
+                prpots.append(pot)
+            finalhandvals = tallyup(hands, table)
+            currentwinner = choosewinner(finalhandvals, folded) 
+            chips = printwinner(currentwinner, pot, chips, allin)
+            sleep(3)
+            gamego = restart(chips)
+    
+        if gamego == False:
+            print('\n\n\n\n')
+            main_screen()
+    except ExitCondition:
+        print('\n\n\n\n')
+        main_screen()
+    except:
+        print('\n\n\n\n')
+        main_screen()
+    
+    
+def hangman():
+
+    gamestop = 1
+    def rungame():
+        def categoryselection():
+            category = 0
+            ask = input("\n\nEnter the number of the respective category you want.\nCommon Phrases(1), Everyday Life(2), or Household Games(3): ")
+            if ask != '1' and ask != '2' and ask != '3' and ask != 'exit':
+                print("\nEnter either '1', '2', or '3' for their respective categories.")
+                categoryselection()
+            else:
+                category = ask
+            return category
+
+        hangmanlist = [" O", "/", "|", "\\", " |"]
+        wrongamnt = 0
+        #householdgames = 2, everydaylife = 1, commonphrases = 0
+        gamelist = [["Common Phrases", "WOLF IN SHEEPS CLOTHING", "BREAK A LEG", "HIT THE SACK", "UNDER THE WEATHER", "BREAK THE ICE", "RAINING CATS AND DOGS", "ONCE IN A BLUE MOON", "GO THE EXTRA MILE", "BUTTERFLIES IN MY STOMACH"], ["Everyday Life", "TOOTHBRUSH", "WATER BOTTLE", "BEDSHEETS", "PAPER TOWEL", "RUNNING SHOES", "KEYS AND WALLET", "SMARTPHONE", "XBOX CONTROLLER", "PLAYSTATION CONTROLLER"], ["Household Games", "MONOPOLY", "SCRABBLE", "CANDY LAND", "THE GAME OF LIFE", "GUESS WHO", "CONNECT FOUR", "YAHTZEE", "APPLES TO APPLES"]]
+        try:
+            genre = int(categoryselection()) - 1
+        except:
+            print('\n\n\n\n')
+            global gamestop
+            gamestop = 0
+            main_screen()
+            return
+        loadedprompt = gamelist[genre][randrange(1,9)] 
+
+        listeditem = list(loadedprompt)
+        correctg, wrongg, guesslistline = [], [], []
+        lowercaselist = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"]
+        uppercaselist = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"]
+        gamestop = 1
+
+
+
+        def redraw():
+            print('\n')
+            if wrongamnt == 0:
+                print("-------|")
+                print(" |     |")
+                print("       |")
+                print("       |")
+                print("       |")
+                print("       |")
+                print("       |")
+                print("_______|_______")
+                print()
+            elif wrongamnt == 1: 
+                print("-------|")
+                print(" |     |")
+                print("".join(hangmanlist[0]) + "     |")
+                print("       |")
+                print("       |")
+                print("       |")
+                print("       |")
+                print("_______|_______")
+                print()
+            elif wrongamnt == 2: 
+                print("-------|")
+                print(" |     |")
+                print("".join(hangmanlist[0]) + "     |")
+                print("".join(hangmanlist[1:4]) + "    |")
+                print("       |")
+                print("       |")
+                print("       |")
+                print("_______|_______")
+                print()
+            elif wrongamnt == 3: 
+                print("-------|")
+                print(" |     |")
+                print("".join(hangmanlist[0]) + "     |")
+                print("".join(hangmanlist[1:4]) + "    |")
+                print("".join(hangmanlist[4]) + "     |")
+                print("       |")
+                print("       |")
+                print("_______|_______")
+                print()
+            elif wrongamnt == 4: 
+                print("-------|")
+                print(" |     |")
+                print("".join(hangmanlist[0]) + "     |")
+                print("".join(hangmanlist[1:4]) + "    |")
+                print("".join(hangmanlist[4]) + "     |")
+                print(" ".join(hangmanlist[1:4:2]) + "    |")
+                print("       |")
+                print("_______|_______")
+                print()
+
+
+        def loadprompt():
+            guesslistline = []
+            if loadedchar in listeditem:
+                correctg.append(loadedchar)
+            for char in listeditem:
+                if (char != " ") and (char not in correctg):
+                    blank = "_ "
+                    print(blank, end="")
+                    guesslistline.append("_")
+                if char in correctg:
+                    corval = char + " "
+                    print(corval, end="")
+                    guesslistline.append(char)
+                elif char == " ":
+                    space = "   "
+                    print(space, end="")
+                    guesslistline.append(" ")
+            if guesslistline == listeditem:
+                gamestop = 0
+                print('\nYou win!')
+                sleep(5)
+                print('\n\n\n\n')
+                main_screen()
+                return 
+
+        while gamestop == 1:
+                redraw()
+                print(f'Genre: {gamelist[genre][0]}')
+                loadedchar = input("\nPlease enter a single capital letter: ")
+                if loadedchar == "exit":
+                    print('\n\n\n\n')
+                    main_screen()
+                elif len(loadedchar) > 1:
+                    print("\nPlease enter only one character.")
+                    loadprompt()
+                    print("".join(guesslistline))
+                elif loadedchar in lowercaselist:
+                    print("\nPlease enter a capital letter")
+                    loadprompt()
+                    print("".join(guesslistline))
+                elif (loadedchar not in lowercaselist) and (loadedchar not in uppercaselist):
+                    print("\nPlease enter an accepted character.")
+                    loadprompt()
+                    print("".join(guesslistline))
+                elif (loadedchar in correctg) or (loadedchar in wrongg):
+                    print("\nYou have already guessed this. Try a different guess!")
+                    loadprompt()
+                    print("".join(guesslistline))
+                elif (loadedchar not in listeditem) and (wrongamnt < 4):
+                    wrongg.append(loadedchar)
+                    wrongamnt += 1
+                    b = ", ".join(wrongg[0:])
+                    print(f"\nWrong! Incorrect letters: {b}")
+                    loadprompt()
+                    print(f'\n{"".join(guesslistline)}')
+                elif wrongamnt == 4:
+                    print("\nGame over!")
+                    loadprompt()
+                    print("".join(guesslistline))
+                    gamestop = 0
+                    return 
+                else:
+                    print('\nCorrect!')
+                    loadprompt()
+
+        
+    def mainmenu():
+        print("Instructions:\n\nTo win hangman, you must guess the word before all the parts of the stickfigure appear. You will be prompted to enter a letter. Every time you enter a letter that is not in the hidden word, a body part is added. You can also enter 'exit' at any point to return to the main menu.")
+        print()
+        global ready
+        while True:
+            rungame()
+            play_again = input('Play again? y/n: ') == 'y'
+            if not play_again:
+                print('\n\n\n\n')
+                main_screen()
+        
+    mainmenu()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def main_screen():
+    print('...............................................')
+    time.sleep(0.3)
+    print('.                                             .')
+    time.sleep(0.3)
+    print('.    *           *       *****     *   *      .')
+    time.sleep(0.3)
+    print('.    *          * *      *         * *        .')
+    time.sleep(0.3)
+    print('.    *         *****     *         *          .')
+    time.sleep(0.3)
+    print('.    *         *   *     *         * *        .')
+    time.sleep(0.3)
+    print('.    ***** .   *   * .   ***** .   *  * .TM   .')
+    time.sleep(0.3)
+    print('.                                             .')
+    time.sleep(0.3)
+    print('...............................................')
+    time.sleep(0.3)
+    print('.                .            .               .')
+    time.sleep(0.3)
+    print('.  1. Blackjack  .  2. Poker  .  3. Hang-Man  .')
+    time.sleep(0.3)
+    print('.                .            .               .')
+    time.sleep(0.3)
+    print('...............................................')
+    time.sleep(1.5)
+
+    check_choice = {'1':'Blackjack','2':'Poker','3':'Hang-Man'}
+
+
+    choice = input("Enter the game you would like to play based\non their respective number, or enter 'exit' to stop: ")
+
+    while choice != '1' and choice != '2' and choice != '3' and choice != 'exit':
+        choice = input("Enter either '1', '2', or '3' for their respective games, or enter 'exit' to stop: ")
+    if choice != 'exit':
+        print(f'You have chosen {check_choice[choice]}.\n\n\n\n')
+    else:
+        sys.exit()
+
+    if choice == '1':
+        blackjack()
+    elif choice == '2':
+        print("Instructions:")
+        print()
+        print("The main objective of poker is to get the best hand out of all the players. There are ten possible hands, high card being the lowest, and royal flush being the highest. All the cards on the table and the cards in your hand are yours. Every round, up to five, a new card gets revealed on the table. If you need more help, search up a poker hand ranking system online.")
+        print()
+        ready = input('Do you understand? Enter yes or no: ')
+        print('\n\n\n\n')
+        while ready != 'yes' and ready != 'no' and ready != 'exit':
+            ready = input("Enter 'yes' or 'no', or you can enter 'exit' to go to the main menu: ")
+        if ready == 'exit':
+            print('\n\n\n\n')
+            main_screen()
+        elif ready == 'no':
+            print('You will learn as you go.\n\n\n\n')
+        poker()
+    elif choice == '3':
+        hangman()
+    elif choice == 'exit':
+        sys.exit()
+    
+        
+
+
+
+
+
+main_screen()
